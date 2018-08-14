@@ -19,16 +19,23 @@ import paddle
 import paddle.fluid as fluid
 from functools import partial
 import numpy as np
+import one_word
 
 CLASS_DIM = 2
 EMB_DIM = 128
 HID_DIM = 512
-BATCH_SIZE = 128
+BATCH_SIZE = 32
+
+ALL_DATA = '/work/book/06.understand_sentiment/one_word_reviews.json'
+TRAIN_FILE = '/work/book/06.understand_sentiment/one_word_reviews_train.json'
+TEST_FILE = '/work/book/06.understand_sentiment/one_word_reviews_test.json'
 
 
 def convolution_net(data, input_dim, class_dim, emb_dim, hid_dim):
     emb = fluid.layers.embedding(
-        input=data, size=[input_dim, emb_dim], is_sparse=True)
+        input=data, size=[input_dim, emb_dim], is_sparse=False)
+    # print(fluid.executor.as_numpy(emb))
+    # print(emb)
     conv_3 = fluid.nets.sequence_conv_pool(
         input=emb,
         num_filters=hid_dim,
@@ -70,18 +77,18 @@ def optimizer_func():
 
 def train(use_cuda, train_program, params_dirname):
     place = fluid.CUDAPlace(0) if use_cuda else fluid.CPUPlace()
-    print("Loading IMDB word dict....")
-    word_dict = paddle.dataset.imdb.word_dict()
+    print("Loading OneWord word dict....")
+    word_dict = one_word.word_dict(ALL_DATA)
 
     print("Reading training data....")
     train_reader = paddle.batch(
         paddle.reader.shuffle(
-            paddle.dataset.imdb.train(word_dict), buf_size=25000),
+            one_word.train(word_dict, TRAIN_FILE), buf_size=25000),
         batch_size=BATCH_SIZE)
 
     print("Reading testing data....")
     test_reader = paddle.batch(
-        paddle.dataset.imdb.test(word_dict), batch_size=BATCH_SIZE)
+        one_word.test(word_dict, TEST_FILE), batch_size=BATCH_SIZE)
 
     trainer = fluid.Trainer(
         train_func=partial(train_program, word_dict),
@@ -112,17 +119,9 @@ def train(use_cuda, train_program, params_dirname):
         feed_order=feed_order)
 
 
-def load_str_from_txt(file_path):
-    if not os.path.isfile(flie_path):
-        raise TypeError(file_path + " dose not exist")
-
-    comment = open(file_path).read()
-    return comment
-
-
 def infer(use_cuda, inference_program, params_dirname=None):
     place = fluid.CUDAPlace(0) if use_cuda else fluid.CPUPlace()
-    word_dict = paddle.dataset.imdb.word_dict()
+    word_dict = one_word.word_dict(ALL_DATA)
 
     inferencer = fluid.Inferencer(
         infer_func=partial(inference_program, word_dict),
@@ -139,29 +138,14 @@ def infer(use_cuda, inference_program, params_dirname=None):
     # element (word). Hence the LoDTensor will hold data for three sentences of 
     # length 3, 4 and 2, respectively. 
     # Note that lod info should be a list of lists.
-    """
-    reviews_str = [
-        'read the book forget the movie',
-        'this is a great movie',
-        'this is very bad',
-        'the movie makes me sick',
-        'you can never find a worse movie',
-        'what a masterpiece',
-        'it deserves any compliment',
-        'no movie this year could be better than this one',
-        'i would rather die',
-        'the movie should be burned in hell'
-    ]
-    """
 
-    dir_path = "./test_samples/"
-    test_samples_name = [
-        '10897_10.txt', '11837_9.txt', '153_8.txt', '1547_9.txt', '5305_7.txt',
-        '5674_1.txt', '6530_4.txt', '6539_2.txt', '7393_3.txt', '7403_2.txt'
-    ]
     reviews_str = [
-        load_str_from_txt(dir_path + name) for name in test_samples_name
+        'angel', 'assure', 'brave', 'clear', 'convience', 'desiring', 'ease',
+        'enjoy'
+        'fast', 'healthy', 'grief', 'haste', 'incense', 'lack', 'mad', 'odor',
+        'pig', 'rash', 'rip', 'shame'
     ]
+
     reviews = [c.split() for c in reviews_str]
 
     UNK = word_dict['<unk>']
@@ -175,8 +159,7 @@ def infer(use_cuda, inference_program, params_dirname=None):
     results = inferencer.infer({'words': tensor_words})
 
     for i, r in enumerate(results[0]):
-        print("\'", reviews_str[i], "\'", "positive: ", r[0], "negative: ",
-              r[1])
+        print(reviews_str[i], " positive: ", r[0], "negative: ", r[1])
         # print("Predict probability of ", r[0], " to be positive and ", r[1],
         #      " to be negative for review \'", reviews_str[i], "\'")
 
@@ -184,11 +167,11 @@ def infer(use_cuda, inference_program, params_dirname=None):
 def main(use_cuda):
     if use_cuda and not fluid.core.is_compiled_with_cuda():
         return
-    params_dirname = "understand_sentiment_conv.inference.model"
+    params_dirname = "oneword_understand_sentiment_conv.inference.model"
     train(use_cuda, train_program, params_dirname)
     infer(use_cuda, inference_program, params_dirname)
 
 
 if __name__ == '__main__':
-    use_cuda = True  # set to True if training with GPU
+    use_cuda = False  # set to True if training with GPU
     main(use_cuda)

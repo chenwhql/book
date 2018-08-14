@@ -142,7 +142,11 @@ def infer(use_cuda, inference_program, params_dirname=None):
 
     reviews_str = [
         'read the book forget the movie', 'this is a great movie',
-        'this is very bad'
+        'this is very bad', 'the movie makes me sick',
+        'you can never find a worse movie', 'what a masterpiece',
+        'it deserves any compliment',
+        'no movie this year could be better than this one',
+        'i would rather die', 'the movie should be burned in hell'
     ]
     reviews = [c.split() for c in reviews_str]
 
@@ -157,8 +161,10 @@ def infer(use_cuda, inference_program, params_dirname=None):
     results = inferencer.infer({'words': tensor_words})
 
     for i, r in enumerate(results[0]):
-        print("Predict probability of ", r[0], " to be positive and ", r[1],
-              " to be negative for review \'", reviews_str[i], "\'")
+        print("positive: ", r[0], "negative: ", r[1], "\'", reviews_str[i],
+              "\'")
+        # print("Predict probability of ", r[0], " to be positive and ", r[1],
+        #       " to be negative for review \'", reviews_str[i], "\'")
 
 
 def main(use_cuda):
@@ -170,5 +176,5 @@ def main(use_cuda):
 
 
 if __name__ == '__main__':
-    use_cuda = False # set to True if training with GPU
+    use_cuda = False  # set to True if training with GPU
     main(use_cuda)
