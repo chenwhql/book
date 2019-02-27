@@ -52,14 +52,20 @@ def train_program():
     label = fluid.layers.data(name='label', shape=[1], dtype='int64')
 
     # Here we can build the prediction network in different ways. Please
-    # predict = softmax_regression() # uncomment for Softmax
+    predict = softmax_regression()  # uncomment for Softmax
     # predict = multilayer_perceptron() # uncomment for MLP
-    predict = convolutional_neural_network()  # uncomment for LeNet5
+    # predict = convolutional_neural_network()  # uncomment for LeNet5
 
     # Calculate the cost from the prediction and label.
     cost = fluid.layers.cross_entropy(input=predict, label=label)
     avg_cost = fluid.layers.mean(cost)
     acc = fluid.layers.accuracy(input=predict, label=label)
+
+    file_path = "./book02_ops.txt"
+    with open(file_path, "w") as f:
+        print(fluid.default_startup_program(), file=f)
+        print(fluid.default_main_program(), file=f)
+
     return [avg_cost, acc]
 
 

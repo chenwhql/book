@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+from __future__ import print_function
 import paddle
 import paddle.fluid as fluid
 import paddle.fluid.layers as pd
@@ -78,6 +80,12 @@ def train_program():
         name="target_language_next_word", shape=[1], dtype='int64', lod_level=1)
     cost = pd.cross_entropy(input=rnn_out, label=label)
     avg_cost = pd.mean(cost)
+
+    file_path = "./book08_ops.txt"
+    with open(file_path, "w") as f:
+        print(fluid.default_startup_program(), file=f)
+        print(fluid.default_main_program(), file=f)
+
     return avg_cost
 
 

@@ -78,6 +78,12 @@ def train_program(word_dict):
     cost = fluid.layers.cross_entropy(input=prediction, label=label)
     avg_cost = fluid.layers.mean(cost)
     accuracy = fluid.layers.accuracy(input=prediction, label=label)
+
+    file_path = "./book06_ops_dyn_rnn.txt"
+    with open(file_path, "w") as f:
+        print(fluid.default_startup_program(), file=f)
+        print(fluid.default_main_program(), file=f)
+
     return [avg_cost, accuracy]
 
 

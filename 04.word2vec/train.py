@@ -68,6 +68,12 @@ def inference_program(is_sparse):
     hidden1 = fluid.layers.fc(
         input=concat_embed, size=HIDDEN_SIZE, act='sigmoid')
     predict_word = fluid.layers.fc(input=hidden1, size=dict_size, act='softmax')
+
+    file_path = "./book04_infer_ops.txt"
+    with open(file_path, "w") as f:
+        print(fluid.default_startup_program(), file=f)
+        print(fluid.default_main_program(), file=f)
+
     return predict_word
 
 
@@ -79,6 +85,12 @@ def train_program(is_sparse):
     next_word = fluid.layers.data(name='nextw', shape=[1], dtype='int64')
     cost = fluid.layers.cross_entropy(input=predict_word, label=next_word)
     avg_cost = fluid.layers.mean(cost)
+
+    file_path = "./book04_ops.txt"
+    with open(file_path, "w") as f:
+        print(fluid.default_startup_program(), file=f)
+        print(fluid.default_main_program(), file=f)
+
     return avg_cost
 
 
@@ -89,10 +101,12 @@ def optimizer_func():
 
 
 def train(use_cuda, train_program, params_dirname):
+    """
     train_reader = paddle.batch(
         paddle.dataset.imikolov.train(word_dict, N), BATCH_SIZE)
     test_reader = paddle.batch(
         paddle.dataset.imikolov.test(word_dict, N), BATCH_SIZE)
+    """
 
     place = fluid.CUDAPlace(0) if use_cuda else fluid.CPUPlace()
 

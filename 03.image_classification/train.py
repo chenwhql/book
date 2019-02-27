@@ -39,6 +39,12 @@ def train_network():
     cost = fluid.layers.cross_entropy(input=predict, label=label)
     avg_cost = fluid.layers.mean(cost)
     accuracy = fluid.layers.accuracy(input=predict, label=label)
+
+    file_path = "./book03_ops.txt"
+    with open(file_path, "w") as f:
+        print(fluid.default_startup_program(), file=f)
+        print(fluid.default_main_program(), file=f)
+
     return [avg_cost, accuracy]
 
 

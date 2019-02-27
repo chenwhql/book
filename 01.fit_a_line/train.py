@@ -38,6 +38,11 @@ def train_program():
     loss = fluid.layers.square_error_cost(input=y_predict, label=y)
     avg_loss = fluid.layers.mean(loss)
 
+    file_path = "./book01_ops.txt"
+    with open(file_path, "w") as f:
+        print(fluid.default_startup_program(), file=f)
+        print(fluid.default_main_program(), file=f)
+
     return avg_loss
 
 
@@ -116,7 +121,7 @@ test_data = test_reader().next()
 test_x = numpy.array([data[0] for data in test_data]).astype("float32")
 test_y = numpy.array([data[1] for data in test_data]).astype("float32")
 
-results = inferencer.infer({'x': test_feat})
+results = inferencer.infer({'x': test_x})
 
 print("infer results: (House Price)")
 for idx, val in enumerate(results[0]):

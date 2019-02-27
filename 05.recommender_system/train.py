@@ -150,6 +150,11 @@ def train_program():
     square_cost = layers.square_error_cost(input=scale_infer, label=label)
     avg_cost = layers.mean(square_cost)
 
+    file_path = "./book05_ops.txt"
+    with open(file_path, "w") as f:
+        print(fluid.default_startup_program(), file=f)
+        print(fluid.default_main_program(), file=f)
+
     return [avg_cost, scale_infer]
 
 

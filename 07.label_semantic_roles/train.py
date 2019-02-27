@@ -157,6 +157,11 @@ def train(use_cuda, save_dirname=None, is_local=True):
         place=place)
     exe = fluid.Executor(place)
 
+    file_path = "./book02_ops.txt"
+    with open(file_path, "w") as f:
+        print(fluid.default_startup_program(), file=f)
+        print(fluid.default_main_program(), file=f)
+
     def train_loop(main_program):
         exe.run(fluid.default_startup_program())
         embedding_param = fluid.global_scope().find_var(
